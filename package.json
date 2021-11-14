@@ -34,7 +34,7 @@
   "bugs": {
     "url": "https://github.com/MarharytaBoichenko/goit-react-hw-03-image-finder/issues"
   },
-  "homepage": "https://MarharytaBoichenko.github.io/goit-react-hw-03-image-findert",
+  "homepage": "https://MarharytaBoichenko.github.io/goit-react-hw-03-image-finder",
   "eslintConfig": {
     "extends": [
       "react-app",
