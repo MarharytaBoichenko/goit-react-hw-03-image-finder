@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import s from './Buton.module.css';
 
 export function Button({ onClick }) {
@@ -7,3 +8,6 @@ export function Button({ onClick }) {
     </button>
   );
 }
+Button.propTypes = {
+  onClick: PropTypes.func.isRequired,
+};

@@ -30,6 +30,7 @@ export default class App extends Component {
       largeImageURL: largeImageURL,
     }));
   };
+
   handleSearchSubmit = searchData => {
     console.log(searchData);
     this.setState({
@@ -37,14 +38,23 @@ export default class App extends Component {
     });
   };
 
-  componentDidUpdate(prevProps, prevState) {
+  getSnapshotBeforeUpdate(prevProps, prevState) {
+    if (prevState.images.length < this.state.images.length) {
+      return this.state.images.scrollHeight - this.state.images.scrollTop;
+    }
+    return null;
+  }
+
+  componentDidUpdate(prevProps, prevState, snapshot) {
     const prevQuery = prevState.query;
     const newQuery = this.state.query;
+    const queryPage = this.state.page;
+
     if (prevQuery !== newQuery) {
       console.log('запрос ізменілся');
       this.setState({ loading: true, page: 1 });
       const { fetchImages } = api;
-      fetchImages(newQuery)
+      fetchImages(newQuery, queryPage)
         .then(data => {
           console.log(data);
           if (data.hits.length === 0) {
@@ -62,17 +72,22 @@ export default class App extends Component {
   }
   onButtonHandler = e => {
     console.log('click  on  button ');
+    const newQuery = this.state.query;
+    const queryPage = this.state.page;
+    const { fetchImages } = api;
     this.setState({ loading: true });
     // setInterval(() => {
-    fetch(
-      `https://pixabay.com/api/?q=${this.state.query}&page=${this.state.page}&key=23459903-45cdb2e5cfc763a2eaddc7311&image_type=photo&orientation=horizontal&per_page=12`,
-    )
-      .then(response => response.json())
+    fetchImages(newQuery, queryPage)
       .then(data => {
         this.setState(prevState => ({
           images: [...prevState.images, ...mapper(data.hits)],
           page: prevState.page + 1,
         }));
+
+        window.scrollBy({
+          top: window.innerHeight,
+          behavior: 'smooth',
+        });
       })
       .catch(error => this.setState({ error }))
       .finally(this.setState({ loading: false }));
@@ -87,8 +102,7 @@ export default class App extends Component {
       transform: 'translate(-50%, -50%)',
       zIndex: '99',
     };
-    const { loading, images, query, largeImageURL, showModal, status } =
-      this.state;
+    const { loading, images, query, largeImageURL, showModal } = this.state;
 
     return (
       <div className="container">
