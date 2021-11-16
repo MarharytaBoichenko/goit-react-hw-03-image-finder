@@ -38,60 +38,47 @@ export default class App extends Component {
     });
   };
 
-  getSnapshotBeforeUpdate(prevProps, prevState) {
-    if (prevState.images.length < this.state.images.length) {
-      return this.state.images.scrollHeight - this.state.images.scrollTop;
-    }
-    return null;
-  }
-
-  componentDidUpdate(prevProps, prevState, snapshot) {
+  componentDidUpdate(prevProps, prevState) {
     const prevQuery = prevState.query;
     const newQuery = this.state.query;
     const queryPage = this.state.page;
 
     if (prevQuery !== newQuery) {
       console.log('запрос ізменілся');
-      this.setState({ loading: true, page: 1 });
-      const { fetchImages } = api;
-      fetchImages(newQuery, queryPage)
-        .then(data => {
-          console.log(data);
-          if (data.hits.length === 0) {
-            toast('No  images  found');
-            return;
-          }
-          this.setState(prevState => ({
-            images: [...mapper(data.hits)],
-            page: prevState.page + 1,
-          }));
-        })
-        .catch(error => this.setState({ error }))
-        .finally(this.setState({ loading: false }));
+      this.fetchImgOnQuery();
     }
   }
-  onButtonHandler = e => {
-    console.log('click  on  button ');
-    const newQuery = this.state.query;
-    const queryPage = this.state.page;
+
+  fetchImgOnQuery = () => {
+    const { query, page } = this.state;
     const { fetchImages } = api;
+
+    if (!query) {
+      return;
+    }
     this.setState({ loading: true });
-    // setInterval(() => {
-    fetchImages(newQuery, queryPage)
+    fetchImages(query, page)
       .then(data => {
+        console.log(data);
+        if (data.hits.length === 0) {
+          toast('No  images  found');
+          return;
+        }
         this.setState(prevState => ({
           images: [...prevState.images, ...mapper(data.hits)],
           page: prevState.page + 1,
         }));
-
-        window.scrollBy({
-          top: window.innerHeight,
+        window.scrollTo({
+          top: document.documentElement.scrollHeight,
           behavior: 'smooth',
         });
+        // window.scrollBy({
+        //   top: window.innerHeight,
+        //   behavior: 'smooth',
+        // });
       })
       .catch(error => this.setState({ error }))
       .finally(this.setState({ loading: false }));
-    // }, 3000);
   };
 
   render() {
@@ -131,7 +118,7 @@ export default class App extends Component {
           <Modal largeImageURL={largeImageURL} onClose={this.toggleModal} />
         )}
         {images.length > 11 && !loading && (
-          <Button onClick={this.onButtonHandler} />
+          <Button onClick={this.fetchImgOnQuery} />
         )}
       </div>
     );
